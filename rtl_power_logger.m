@@ -2,8 +2,8 @@
 
 function flat_db = get_db()
 
-    frequency_low=120;
-    frequency_high=140;
+    frequency_low=400;
+    frequency_high=450;
     frequency_step=0.01;
     integration_interval=0;
     crop_ratio=0.4;
@@ -22,7 +22,6 @@ function flat_db = get_db()
 
     flat_db=[,];
 
-    
     while ((s=fgets(f))~=(-1)) 
 
         sixt_comma=0;
@@ -95,57 +94,61 @@ function my_plot(flat_db)
 end
 
 
-
 function image_append(image_path,data)
 
-    if exist(image_path,'file')
-        image=imread(image_path);
-    elseif
-        disp('file not found, creating');
-  
-        freqs=data(:,1)'; % horizontal vector with frequencies
+    persistent image=-1;
+    persistent save=int32(1);
     
-        meter=ones( size(freqs ) )*65536;
-        image=ones( size(freqs ) )*65536;
+    if image==-1
+        if exist(image_path,'file')
+            image=imread(image_path);
+        elseif
+            disp('file not found, creating');
+    
+            freqs=data(:,1)'; % horizontal vector with frequencies
+        
+            meter=ones( size(freqs ) )*65536;
+            image=ones( size(freqs ) )*65536;
 
-        % mark gqrx bookmarks on the scale
-        % warning: algorithm is not efficient
-        for freq=gqrx_bookmarks()
-            for j=1:size(freqs)(2)  
-                if freqs(j) > freq
-                    meter(j)=32768; % gray color
-                    break;
-                end
-            end
-        end
-        
-        for freq=[100000000 1000000] % draw scale
-            
-            base_mhz=freqs(1)-mod(freqs(1), freq)+freq; % find last multiple of freq
-            step_mhz = freqs(2) - freqs(1); % get frequency step from data
-        
-            search_next=base_mhz;
-    
-            for j=1:size(freqs)(2)  
-                if freqs(j) > search_next
-                    meter(j)=0;
-                    if size(meter)(2) > j+1 %make the lines 2 pixels thick, avoiding breakage
-                        meter(j+1)=0;
+            % mark gqrx bookmarks on the scale
+            % warning: algorithm is not efficient
+            for freq=gqrx_bookmarks()
+                for j=1:size(freqs)(2)  
+                    if freqs(j) > freq
+                        meter(j)=32768; % gray color
+                        break;
                     end
-                    
-                    search_next+=freq;
                 end
             end
             
+            for freq=[100000000 1000000] % draw scale
+                
+                base_mhz=freqs(1)-mod(freqs(1), freq)+freq; % find last multiple of freq
+                step_mhz = freqs(2) - freqs(1); % get frequency step from data
             
-            for j=1:10
-                size(image);
-                size(meter);
-                image=vertcat(image,meter);
-            end
-        end % for
-    end % if
-    
+                search_next=base_mhz;
+        
+                for j=1:size(freqs)(2)  
+                    if freqs(j) > search_next
+                        meter(j)=0;
+                        if size(meter)(2) > j+1 %make the lines 2 pixels thick, avoiding breakage
+                            meter(j+1)=0;
+                        end
+                        
+                        search_next+=freq;
+                    end
+                end
+                
+                
+                for j=1:10
+                    size(image);
+                    size(meter);
+                    image=vertcat(image,meter);
+                end
+            end % for
+        end % if
+    end % if image exist
+        
     row=data(:,2)';
     new_line=uint16((50+row)*1310);
     
@@ -155,7 +158,34 @@ function image_append(image_path,data)
     
     image=vertcat(image,new_line);
     
-    imwrite(image,image_path);
+
+    if mod(save++,10)==0  %save every 10 appends, for performance
+        disp('**WRITING');
+        imwrite(image,image_path);
+    end
+end % function
+
+
+function ret = gqrx_bookmarks()
+    fd = fopen(strcat(getenv('HOME'),'/.config/gqrx/bookmarks.csv'));
+    ret = [];
+    tline = fgets(fd);
+
+    while ischar(tline)
+        
+        arr=textscan(tline, '%s', 'delimiter',';'); 
+        arr=(cell2mat(arr));
+
+        if size(arr) == [5 1]
+            freq=str2num(arr{1});
+            if isnumeric(freq)
+                ret=[ret freq];
+            end
+        end
+        tline = fgets(fd);
+    end
+
+    fclose(fd);
 
 end % function
 
