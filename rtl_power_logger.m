@@ -87,9 +87,9 @@ end % function
 function my_plot(flat_db)
     graphics_toolkit('gnuplot');
     plot(flat_db(:,1),flat_db(:,2));
-    xlabel("Frequenza");
+    xlabel('Frequenza');
     
-    #print(strcat("out/",ctime(time()) ),"-dpng","-S4000,2000")
+    %print(strcat('out/',ctime(time()) ),'-dpng','-S4000,2000');
     axis([flat_db(1,1) flat_db(end,1) -50 10])
 
 end
@@ -162,10 +162,10 @@ end % function
 
 
 
-image_path="/tmp/waterfall.png";
+image_path='/tmp/waterfall.png';
 
 i=1;
 while i++
-    disp(strcat(num2str(i), "_", ctime (time ())));
+    disp(strcat(num2str(i), '_', ctime (time ())));
     image_append(image_path,get_db());
 end
