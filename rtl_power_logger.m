@@ -2,16 +2,14 @@
 
 function flat_db = get_db()
 
-    frequency_low=400;
-    frequency_high=450;
+    frequency_low=130;
+    frequency_high=800;
     frequency_step=0.01;
-    integration_interval=0;
+    integration_interval=15;
     crop_ratio=0.4;
-    gain=50;
 
     cmdline=strcat('rtl_power',
                 ' -f', num2str(frequency_low),'M:',num2str(frequency_high),'M:',num2str(frequency_step),'M ',
-                ' -g ', num2str(gain),
                 ' -c ', num2str(crop_ratio),
                 ' -i ', num2str(integration_interval),
                 ' -1 ',
@@ -150,7 +148,7 @@ function image_append(image_path,data)
     end % if image exist
         
     row=data(:,2)';
-    new_line=uint16((50+row)*1310);
+    new_line=uint16((40+row)*1638);
     
     if size(image) ~= size(new_line)
         disp('are you trying to append to the wrong image?');
@@ -188,7 +186,6 @@ function ret = gqrx_bookmarks()
     fclose(fd);
 
 end % function
-
 
 
 
