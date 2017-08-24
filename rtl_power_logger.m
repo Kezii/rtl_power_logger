@@ -2,16 +2,17 @@
 
 function flat_db = get_db()
 
-    frequency_low=130;
-    frequency_high=800;
-    frequency_step=0.01;
-    integration_interval=15;
+    frequency_low=25;
+    frequency_high=1000;
+    frequency_step=0.02;
+    integration_interval=5;
     crop_ratio=0.4;
 
     cmdline=strcat('rtl_power',
                 ' -f', num2str(frequency_low),'M:',num2str(frequency_high),'M:',num2str(frequency_step),'M ',
                 ' -c ', num2str(crop_ratio),
                 ' -i ', num2str(integration_interval),
+                ' -g 50 ',
                 ' -1 ',
                 ' 2> /dev/null'
                 );
